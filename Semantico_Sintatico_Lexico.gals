@@ -1,0 +1,214 @@
+#Options
+GenerateScanner = true
+GenerateParser = true
+Language = Java
+ScannerName = Lexico
+ParserName = Sintatico
+SemanticName = Semantico
+ScannerCaseSensitive = true
+ScannerTable = Compact
+Input = Stream
+Parser = LL
+#RegularDefinitions
+max: [A-Z]
+min: [a-z]
+
+letra: {min} | {max}
+prefixo: i"_"| f"_" | b"_" | s"_"
+digito: [0-9]
+umAnove: [1-9]
+aspas: \"
+abreC: ">@"\n
+fechaC: \n"@<"
+virgula: ","
+#Tokens
+//Helena M. Luz, Luana Nitsche, Maria Eduarda Nascimento
+
+constante_float: (0| ({umAnove}({digito})*)) {virgula} ({digito}| ({digito}*{umAnove}))
+
+constante_int: 0| ({umAnove}({digito})*)
+
+reservada: {min} ({letra})*
+
+identificador:! {prefixo} ({max} | {min}{max}?)(({min}|{digito}){max}?)*
+
+constante_string: {aspas} ([^\n\"%] | "%" "x"+)* {aspas}
+
+:! {abreC} ([^@}])* {fechaC}
+
+
+pr_main = reservada: "main"
+
+pr_end = reservada : "end"
+
+pr_if = reservada : "if"
+ 
+pr_elif = reservada : "elif"
+
+pr_else = reservada : "else"
+
+pr_false = reservada : "false"
+
+pr_true = reservada : "true"
+
+pr_read = reservada : "read"
+
+pr_write = reservada : "write"
+
+pr_writeln = reservada : "writeln"
+
+pr_repeat = reservada : "repeat"
+
+pr_until = reservada : "until"
+
+pr_while = reservada : "while"
+
+
+"&&"
+"||" 
+"!"
+"=="
+"!=" 
+"<"
+">"
+"+"
+"-"
+"*"
+"/"
+","
+";"
+"="
+"("
+")"
+
+
+:[\s\t\n] //reconhecer caracteres de formatacao
+
+//pr_classe = reservada: "classe"
+#NonTerminals
+//nao terminal da forma geral do programa
+
+<pograma>
+<lista_de_instrucoes>
+<instrucao>
+<lista_de_identificadores>
+<comando>
+<entrada_dados>
+<lista_de_entrada>
+<expressao>
+<saida_dados>
+<lista_de_expressao>
+<selecao>
+<lista_de_comandos>
+<selecao_elif>
+<selecao_else>
+<repeticao>
+<expressao1> 
+<elemento>
+<relacional> 
+<relacional1> 
+<operador_relacional>
+<aritmetica>
+<aritmetica1>
+<termo>
+<termo1>
+<fator>
+<lista_de_instrucoes1>
+<lista_de_identificadores1>
+<instrucao1>
+<lista_de_entrada1>
+<lista_de_expressao1>
+<lista_de_comandos1>
+<repeticao1> 
+<comando1>
+<atribuicao>
+
+
+#Grammar
+
+//<classe> ::= identificador "=" pr_classe ;
+//<heranca> ::= vazio | "(" identificador ")" ;
+
+
+
+<pograma> ::= #100 pr_main 
+	<lista_de_instrucoes>
+	pr_end #101 ;
+
+
+<lista_de_instrucoes> ::= <instrucao> ";" <lista_de_instrucoes1>  ;
+
+<lista_de_instrucoes1> ::= î | <lista_de_instrucoes>;
+
+<instrucao> ::= <lista_de_identificadores> <instrucao1>  | <comando1> ;
+
+<instrucao1> ::= #102 î | "=" <expressao> #103 ; 
+
+
+<lista_de_identificadores> ::= identificador #104 <lista_de_identificadores1> ;
+
+<lista_de_identificadores1> ::="," <lista_de_identificadores> | î;
+
+<comando1> ::=  <entrada_dados> | <saida_dados> | <selecao> | <repeticao>;
+
+<comando> ::=  <entrada_dados> | <saida_dados> | <selecao> | <repeticao> | <atribuicao> ;
+
+<atribuicao> ::= <lista_de_identificadores> "=" <expressao> #103;
+
+<entrada_dados> ::= pr_read "(" <lista_de_entrada> ")" ;
+
+<lista_de_entrada> ::= constante_string #106 "," identificador #105 <lista_de_entrada1> | identificador #105 <lista_de_entrada1> ;
+
+<lista_de_entrada1> ::=  "," <lista_de_entrada> | î;
+
+<saida_dados> ::= pr_write "(" <lista_de_expressao> ")" | pr_writeln "(" <lista_de_expressao> ")" #107 ; 
+
+<lista_de_expressao> ::= <expressao> #108 <lista_de_expressao1>  ;
+
+<lista_de_expressao1> ::= "," <lista_de_expressao> |î;
+	
+<selecao> ::= pr_if <expressao> #109 <lista_de_comandos>
+	<selecao_elif> #110
+	<selecao_else> #111 pr_end ;
+
+<lista_de_comandos> ::= <comando> ";" <lista_de_comandos1> ;
+
+<lista_de_comandos1> ::= î |  <lista_de_comandos> ;
+
+<selecao_elif> ::= #110 pr_elif <expressao> #112 <lista_de_comandos> <selecao_elif> | î ;
+
+<selecao_else> ::= pr_else <lista_de_comandos> | î ;
+
+<repeticao> ::= #113 pr_repeat <lista_de_comandos> <repeticao1> ;
+
+<repeticao1> ::=  pr_while <expressao> #114 | pr_until <expressao> #115;
+
+<expressao> ::= <elemento> <expressao1> ; 
+
+<expressao1> ::= î | "&&" <elemento> #116 <expressao1> | "||" <elemento> #117 <expressao1> ; 
+
+<elemento> ::= <relacional> | pr_true #118| pr_false #119 | "!" <elemento> #120 ; 
+
+<relacional> ::= <aritmetica> <relacional1> ; 
+
+<relacional1> ::= î | <operador_relacional> #121 <aritmetica> #122; 
+
+<operador_relacional>::= "==" | "!=" | "<" | ">" ; 
+
+<aritmetica> ::= <termo> <aritmetica1> ; 
+
+<aritmetica1> ::= î | "+" <termo> #123 <aritmetica1> | "-" <termo> #124 <aritmetica1> ; 
+
+<termo> ::= <fator> <termo1> ; 
+
+<termo1> ::= î | "*" <fator> #125 <termo1> | "/" <fator> #126 <termo1> ; 
+
+<fator> ::= identificador #127 | 
+ constante_int  #128| 
+ constante_float #129 | 
+ constante_string #130 | 
+ "(" <expressao> ")" | 
+ "+" <fator> | 
+ "-" <fator> #131 ; 
+
+
